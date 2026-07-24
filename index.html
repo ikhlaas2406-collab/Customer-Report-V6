@@ -348,6 +348,17 @@
     font-size: 11px;
   }
   .nav-btn .nav-icon { display: block; margin-bottom: 3px; font-size: 19px; }
+  .svg-icon {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    align-items: center;
+    justify-content: center;
+    vertical-align: -4px;
+  }
+  .svg-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-btn .svg-icon { display: flex; width: 20px; height: 20px; margin: 0 auto 3px; }
   .nav-btn[aria-current="page"] {
     color: var(--text);
     border-color: var(--border);
@@ -457,7 +468,7 @@
     </div>
     <div class="customer-list" id="customerList"></div>
     <div class="add-customer-wrap">
-      <button class="add-btn" id="addCustomerBtn" type="button">+ Add customer</button>
+      <button class="add-btn" id="addCustomerBtn" type="button"><span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span> Add customer</button>
     </div>
 
     <div class="panel">
@@ -470,10 +481,10 @@
     </div>
     <div class="panel">
       <div class="report-actions">
-        <button class="primary-btn" id="saveBtn" type="button">Save notes</button>
-        <button class="secondary-btn" id="copyBtn" type="button">Copy report</button>
+        <button class="primary-btn" id="saveBtn" type="button"><span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h12l2 2v14H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg></span> Save notes</button>
+        <button class="secondary-btn" id="copyBtn" type="button"><span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="1.5"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h3"/></svg></span> Copy report</button>
       </div>
-      <button class="secondary-btn reset-inventory" id="resetReportBtn" type="button">Reset current report</button>
+      <button class="secondary-btn reset-inventory" id="resetReportBtn" type="button"><span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></span> Reset current report</button>
       <div class="status-message" id="statusMessage" role="status" aria-live="polite"></div>
     </div>
   </section>
@@ -486,7 +497,7 @@
       </div>
     </div>
     <div class="inventory-grid" id="inventoryGrid"></div>
-    <button class="secondary-btn reset-inventory" id="resetInventoryBtn" type="button">Reset all inventory</button>
+    <button class="secondary-btn reset-inventory" id="resetInventoryBtn" type="button"><span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></span> Reset all inventory</button>
   </section>
 
   <section class="view" id="view-saved" aria-labelledby="saved-title">
@@ -503,12 +514,15 @@
 <nav class="app-bottom" aria-label="Primary navigation">
   <div class="nav-inner">
     <button class="nav-btn" type="button" data-view="current" aria-current="page">
+      <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
       Current Report
     </button>
     <button class="nav-btn" type="button" data-view="inventory">
+      <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M8 7V4h8v3M8 12h8M8 16h5"/></svg></span>
       Inventory
     </button>
     <button class="nav-btn" type="button" data-view="saved">
+      <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 4v5h6V4M9 14h6M9 17h4"/></svg></span>
       Saved Data
     </button>
   </div>
