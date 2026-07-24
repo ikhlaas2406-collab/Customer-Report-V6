@@ -396,10 +396,8 @@
       width: 34px;
       min-height: 34px;
       padding: 0;
-      font-size: 0;
+      font-size: 11px;
     }
-    .checkin-btn::before { content: '↪'; font-size: 16px; }
-    .checkin-btn.active::before { content: '✓'; }
     .expand-btn {
       width: 34px;
       min-height: 34px;
@@ -438,7 +436,7 @@
     <div class="app-title">Customer <span>Report</span></div>
     <div class="header-badges">
       <div class="date-badge" id="dateBadge"></div>
-      <div class="weather-badge" id="weatherBadge" aria-live="polite">⏳ Weather loading</div>
+      <div class="weather-badge" id="weatherBadge" aria-live="polite">Weather loading</div>
     </div>
   </div>
   <div class="stats-row" aria-label="Current report summary">
@@ -459,7 +457,7 @@
     </div>
     <div class="customer-list" id="customerList"></div>
     <div class="add-customer-wrap">
-      <button class="add-btn" id="addCustomerBtn" type="button">＋ Add customer</button>
+      <button class="add-btn" id="addCustomerBtn" type="button">+ Add customer</button>
     </div>
 
     <div class="panel">
@@ -473,9 +471,9 @@
     <div class="panel">
       <div class="report-actions">
         <button class="primary-btn" id="saveBtn" type="button">Save notes</button>
-        <button class="secondary-btn" id="copyBtn" type="button">📋 Copy report</button>
+        <button class="secondary-btn" id="copyBtn" type="button">Copy report</button>
       </div>
-      <button class="secondary-btn reset-inventory" id="resetReportBtn" type="button">↺ Reset current report</button>
+      <button class="secondary-btn reset-inventory" id="resetReportBtn" type="button">Reset current report</button>
       <div class="status-message" id="statusMessage" role="status" aria-live="polite"></div>
     </div>
   </section>
@@ -505,13 +503,13 @@
 <nav class="app-bottom" aria-label="Primary navigation">
   <div class="nav-inner">
     <button class="nav-btn" type="button" data-view="current" aria-current="page">
-      <span class="nav-icon" aria-hidden="true">📝</span>Current Report
+      Current Report
     </button>
     <button class="nav-btn" type="button" data-view="inventory">
-      <span class="nav-icon" aria-hidden="true">📦</span>Inventory
+      Inventory
     </button>
     <button class="nav-btn" type="button" data-view="saved">
-      <span class="nav-icon" aria-hidden="true">🗂️</span>Saved Data
+      Saved Data
     </button>
   </div>
 </nav>
@@ -520,7 +518,7 @@
   <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
       <h2 id="modalTitle">Saved report</h2>
-      <button class="icon-btn" id="closeModalBtn" type="button" aria-label="Close saved report">×</button>
+      <button class="icon-btn" id="closeModalBtn" type="button" aria-label="Close saved report">Close</button>
     </div>
     <div class="modal-content" id="modalContent"></div>
   </article>
@@ -539,12 +537,6 @@ const WMO = {
   61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 71: 'Light Snow', 73: 'Snow',
   75: 'Heavy Snow', 77: 'Snow Grains', 80: 'Showers', 81: 'Showers', 82: 'Heavy Showers',
   85: 'Snow Showers', 86: 'Heavy Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm + Hail', 99: 'Heavy Thunderstorm'
-};
-const WMO_ICON = {
-  0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️', 51: '🌦️', 53: '🌦️',
-  55: '🌧️', 61: '🌧️', 63: '🌧️', 65: '🌧️', 71: '🌨️', 73: '❄️', 75: '❄️',
-  77: '❄️', 80: '🌧️', 81: '🌧️', 82: '⛈️', 85: '🌨️', 86: '🌨️',
-  95: '⛈️', 96: '⛈️', 99: '⛈️'
 };
 
 let current = loadCurrent();
@@ -773,7 +765,7 @@ function buildCard(customer, index) {
   const checkIn = document.createElement('button');
   checkIn.type = 'button';
   checkIn.className = `checkin-btn${customer.checkedIn ? ' active' : ''}`;
-  checkIn.textContent = customer.checkedIn ? '✓ In' : 'Check In';
+  checkIn.textContent = customer.checkedIn ? 'In' : 'Check In';
   checkIn.setAttribute('aria-pressed', String(customer.checkedIn));
   checkIn.setAttribute('aria-label', `${customer.checkedIn ? 'Undo' : 'Check in'} ${customer.name}`);
   checkIn.addEventListener('click', () => toggleCheckIn(index));
@@ -781,7 +773,7 @@ function buildCard(customer, index) {
   const expand = document.createElement('button');
   expand.type = 'button';
   expand.className = 'expand-btn';
-  expand.textContent = customer.expanded ? '▲' : '▼';
+  expand.textContent = customer.expanded ? '-' : '+';
   expand.setAttribute('aria-expanded', String(customer.expanded));
   expand.setAttribute('aria-controls', `body-${customer.id}`);
   expand.setAttribute('aria-label', `${customer.expanded ? 'Collapse' : 'Expand'} ${customer.name}`);
@@ -912,9 +904,9 @@ function copyReport() {
     lines.push('No customers checked in yet.');
   } else {
     checked.forEach(customer => {
-      const redir = customer.redirected || '–';
+      const redir = customer.redirected || '-';
       const displayName = customer.name.replace(/^Customer\s+(\d+)$/i, 'CX$1');
-      let line = `${displayName} |${formatReportTime(customer.checkInTime) || '–'}| Redirected: ${redir}`;
+      let line = `${displayName} |${formatReportTime(customer.checkInTime) || '-'}| Redirected: ${redir}`;
       if (customer.interested) line += ` | Interested: ${customer.interested}`;
       if (customer.is18OrOlder === 'Yes') line += ' | 18+';
       if (customer.is18OrOlder === 'No') line += ' | 18-';
@@ -933,7 +925,7 @@ function copyReport() {
         new Promise((_, reject) => window.setTimeout(() => reject(new Error('Clipboard timed out')), 800))
       ])
     : Promise.reject(new Error('Clipboard API unavailable'));
-  copied.then(() => setStatus('✓ Copied to clipboard!')).catch(() => {
+  copied.then(() => setStatus('Copied to clipboard!')).catch(() => {
     const fallback = document.createElement('textarea');
     fallback.value = text;
     fallback.style.position = 'fixed';
@@ -942,9 +934,9 @@ function copyReport() {
     fallback.select();
     try {
       document.execCommand('copy');
-      setStatus('✓ Copied to clipboard!');
+      setStatus('Copied to clipboard!');
     } catch (error) {
-      setStatus('Copy unavailable — select the report text manually.');
+      setStatus('Copy unavailable - select the report text manually.');
     } finally {
       fallback.remove();
     }
@@ -982,7 +974,7 @@ function renderSaved() {
     title.textContent = formatDate(record.savedAt);
     const meta = document.createElement('div');
     meta.className = 'saved-meta';
-    meta.textContent = `${formatDateTime(record.savedAt)} · ${record.customers.length} customer entries`;
+    meta.textContent = `${formatDateTime(record.savedAt)} - ${record.customers.length} customer entries`;
     heading.append(title, meta);
     const open = document.createElement('button');
     open.type = 'button';
@@ -1000,12 +992,12 @@ function renderSaved() {
 }
 
 function showSavedRecord(record) {
-  document.getElementById('modalTitle').textContent = `Saved report · ${formatDate(record.savedAt)}`;
+  document.getElementById('modalTitle').textContent = `Saved report - ${formatDate(record.savedAt)}`;
   const content = document.getElementById('modalContent');
   content.replaceChildren();
   const summary = document.createElement('p');
   summary.className = 'detail-line';
-  summary.textContent = `Saved ${formatDateTime(record.savedAt)}${record.trafficIndex >= 0 ? ` · Traffic: ${TRAFFIC_LABELS[record.trafficIndex]}` : ''}`;
+  summary.textContent = `Saved ${formatDateTime(record.savedAt)}${record.trafficIndex >= 0 ? ` - Traffic: ${TRAFFIC_LABELS[record.trafficIndex]}` : ''}`;
   content.appendChild(summary);
   if (record.extraNotes) {
     const extra = document.createElement('p');
@@ -1017,13 +1009,13 @@ function showSavedRecord(record) {
     const detail = document.createElement('section');
     detail.className = 'detail-customer';
     const title = document.createElement('h3');
-    title.textContent = `${customer.name} · ${customer.checkedIn ? `Checked in ${formatCheckInTime(customer.checkInTime)}` : 'Not checked in'}`;
+    title.textContent = `${customer.name} - ${customer.checkedIn ? `Checked in ${formatCheckInTime(customer.checkInTime)}` : 'Not checked in'}`;
     const details = document.createElement('p');
     details.className = 'detail-line';
-    details.textContent = `Redirected: ${customer.redirected || '–'} · Interested: ${customer.interested || '–'} · 18+: ${customer.is18OrOlder || '–'} · Product sold: ${customer.soldProduct === 'NONE' ? 'None' : (customer.soldProduct || '–')}`;
+    details.textContent = `Redirected: ${customer.redirected || '-'} - Interested: ${customer.interested || '-'} - 18+: ${customer.is18OrOlder || '-'} - Product sold: ${customer.soldProduct === 'NONE' ? 'None' : (customer.soldProduct || '-')}`;
     const notes = document.createElement('p');
     notes.className = 'detail-line';
-    notes.textContent = customer.notes ? `Notes: ${customer.notes}` : 'Notes: –';
+    notes.textContent = customer.notes ? `Notes: ${customer.notes}` : 'Notes: -';
     detail.append(title, details, notes);
     content.appendChild(detail);
   });
@@ -1051,7 +1043,7 @@ function renderInventory() {
     const minus = document.createElement('button');
     minus.type = 'button';
     minus.className = 'icon-btn';
-    minus.textContent = '−';
+    minus.textContent = '-';
     minus.setAttribute('aria-label', `Decrease ${key} inventory`);
     minus.disabled = inventory[key] === 0;
     minus.addEventListener('click', () => changeInventory(key, -1));
@@ -1113,10 +1105,10 @@ async function fetchWeather() {
     const temp = Math.round(data.current.temperature_2m);
     const code = data.current.weather_code;
     weatherShort = `${temp}°C ${WMO[code] || 'Unknown'}`;
-    document.getElementById('weatherBadge').textContent = `${WMO_ICON[code] || '🌡️'} ${weatherShort}`;
+    document.getElementById('weatherBadge').textContent = weatherShort;
   } catch (error) {
     weatherShort = '';
-    document.getElementById('weatherBadge').textContent = '⚠️ Weather unavailable';
+    document.getElementById('weatherBadge').textContent = 'Weather unavailable';
   }
 }
 
