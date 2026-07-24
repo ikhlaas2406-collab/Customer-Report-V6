@@ -272,6 +272,16 @@
   .add-btn { max-width: 430px; }
   .panel { padding: 14px; margin-top: 14px; }
   .traffic-track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .traffic-slider-wrap { position: relative; padding: 4px 2px 0; }
+  .traffic-slider {
+    width: 100%;
+    height: 24px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .traffic-ticks { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: -2px; }
+  .traffic-tick { color: var(--muted); font-size: 10px; text-align: center; }
+  .traffic-tick.active { color: var(--text); font-weight: 700; }
   .traffic-option {
     min-height: 42px;
     padding: 6px 2px;
@@ -404,10 +414,12 @@
     .card-actions { gap: 4px; }
     .customer-num { flex-basis: 22px; }
     .checkin-btn {
-      width: 34px;
+      min-width: 72px;
       min-height: 34px;
-      padding: 0;
-      font-size: 11px;
+      padding: 0 8px;
+      font-size: 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .expand-btn {
       width: 34px;
@@ -551,6 +563,12 @@ const WMO = {
   61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 71: 'Light Snow', 73: 'Snow',
   75: 'Heavy Snow', 77: 'Snow Grains', 80: 'Showers', 81: 'Showers', 82: 'Heavy Showers',
   85: 'Snow Showers', 86: 'Heavy Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm + Hail', 99: 'Heavy Thunderstorm'
+};
+const WMO_ICONS = {
+  0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️',
+  51: '🌦️', 53: '🌦️', 55: '🌧️', 61: '🌦️', 63: '🌧️', 65: '🌧️',
+  71: '🌨️', 73: '❄️', 75: '❄️', 77: '🌨️', 80: '🌦️', 81: '🌧️',
+  82: '🌧️', 85: '🌨️', 86: '❄️', 95: '⛈️', 96: '⛈️', 99: '⛈️'
 };
 
 let current = loadCurrent();
@@ -893,20 +911,18 @@ function updateStats() {
 
 function renderTraffic() {
   const track = document.getElementById('trafficTrack');
-  track.replaceChildren(...TRAFFIC_LABELS.map((label, index) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'traffic-option';
-    button.textContent = label;
-    button.setAttribute('aria-pressed', String(current.trafficIndex === index));
-    button.style.setProperty('--traffic-color', TRAFFIC_COLORS[index]);
-    button.addEventListener('click', () => {
-      current.trafficIndex = current.trafficIndex === index ? -1 : index;
-      saveCurrent();
-      renderTraffic();
-    });
-    return button;
-  }));
+  const selected = current.trafficIndex < 0 ? 0 : current.trafficIndex;
+  track.innerHTML = `<div class="traffic-slider-wrap">
+    <input class="traffic-slider" id="trafficSlider" type="range" min="0" max="5" step="1" value="${selected}" aria-label="Traffic level">
+    <div class="traffic-ticks">${TRAFFIC_LABELS.map((label, index) => `<span class="traffic-tick${selected === index ? ' active' : ''}">${label}</span>`).join('')}</div>
+  </div>`;
+  const slider = document.getElementById('trafficSlider');
+  slider.style.setProperty('--traffic-color', TRAFFIC_COLORS[selected]);
+  slider.addEventListener('input', () => {
+    current.trafficIndex = Number(slider.value);
+    saveCurrent();
+    renderTraffic();
+  });
 }
 
 function copyReport() {
@@ -1118,7 +1134,7 @@ async function fetchWeather() {
     const data = await response.json();
     const temp = Math.round(data.current.temperature_2m);
     const code = data.current.weather_code;
-    weatherShort = `${temp}°C ${WMO[code] || 'Unknown'}`;
+    weatherShort = `${temp}°C ${WMO_ICONS[code] || ''} ${WMO[code] || 'Unknown'}`.replace(/\s+/g, ' ').trim();
     document.getElementById('weatherBadge').textContent = weatherShort;
   } catch (error) {
     weatherShort = '';
