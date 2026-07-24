@@ -276,9 +276,19 @@
   .traffic-slider {
     width: 100%;
     height: 24px;
-    accent-color: var(--accent);
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--slider-color) 0%, var(--slider-color) var(--slider-percent), var(--surface-inset) var(--slider-percent), var(--surface-inset) 100%);
     cursor: pointer;
+    touch-action: none;
+    user-select: none;
   }
+  .traffic-slider::-webkit-slider-runnable-track { height: 7px; border: 1px solid var(--border); border-radius: 999px; background: transparent; }
+  .traffic-slider::-webkit-slider-thumb { width: 19px; height: 19px; margin-top: -7px; border: 2px solid var(--surface-raised); border-radius: 50%; background: var(--slider-color); box-shadow: 0 2px 8px #0006; -webkit-appearance: none; }
+  .traffic-slider::-moz-range-track { height: 7px; border: 1px solid var(--border); border-radius: 999px; background: transparent; }
+  .traffic-slider::-moz-range-progress { height: 7px; border-radius: 999px; background: var(--slider-color); }
+  .traffic-slider::-moz-range-thumb { width: 15px; height: 15px; border: 2px solid var(--surface-raised); border-radius: 50%; background: var(--slider-color); box-shadow: 0 2px 8px #0006; }
   .traffic-ticks { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: -2px; }
   .traffic-tick { color: var(--muted); font-size: 10px; text-align: center; }
   .traffic-tick.active { color: var(--text); font-weight: 700; }
@@ -916,11 +926,20 @@ function renderTraffic() {
     <div class="traffic-ticks">${TRAFFIC_LABELS.map((label, index) => `<span class="traffic-tick${selected === index ? ' active' : ''}">${label}</span>`).join('')}</div>
   </div>`;
   const slider = document.getElementById('trafficSlider');
-  slider.style.setProperty('--traffic-color', TRAFFIC_COLORS[selected]);
+  const updateSliderVisual = (index) => {
+    slider.style.setProperty('--slider-color', TRAFFIC_COLORS[index]);
+    slider.style.setProperty('--slider-percent', `${(index / (TRAFFIC_LABELS.length - 1)) * 100}%`);
+    slider.setAttribute('aria-valuetext', TRAFFIC_LABELS[index]);
+    track.querySelectorAll('.traffic-tick').forEach((tick, tickIndex) => {
+      tick.classList.toggle('active', tickIndex === index);
+    });
+  };
+  updateSliderVisual(selected);
   slider.addEventListener('input', () => {
-    current.trafficIndex = Number(slider.value);
+    const index = Number(slider.value);
+    current.trafficIndex = index;
     saveCurrent();
-    renderTraffic();
+    updateSliderVisual(index);
   });
 }
 
