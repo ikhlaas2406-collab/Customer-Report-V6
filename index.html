@@ -97,24 +97,27 @@
   .weather-badge { color: #8bd8fa; }
   .header-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
   .stats-row {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
     margin-top: 14px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    overflow: hidden;
   }
-  .stats-row::-webkit-scrollbar { display: none; }
   .stat-chip {
-    flex: 0 0 auto;
-    padding: 7px 11px;
+    min-width: 0;
+    padding: 7px 4px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--surface-raised);
     box-shadow: var(--shadow-soft);
     color: var(--muted);
-    font: 12px var(--mono);
+    font: 10px var(--mono);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .stat-chip .num { margin-right: 4px; color: var(--accent); font-size: 16px; }
+  .stat-chip .num { margin-right: 2px; color: var(--accent); font-size: 14px; }
   .stat-chip.green .num { color: var(--green); }
   .stat-chip.amber .num { color: var(--amber); }
   .stat-chip.purple .num { color: #b69cff; }
@@ -482,6 +485,11 @@
       padding: 5px 2px;
       font-size: 11px;
     }
+  }
+  @media (max-width: 380px) {
+    .stats-row { gap: 3px; }
+    .stat-chip { padding: 6px 2px; font-size: 8px; }
+    .stat-chip .num { margin-right: 1px; font-size: 13px; }
   }
 </style>
 </head>
