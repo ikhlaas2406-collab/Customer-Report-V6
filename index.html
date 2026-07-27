@@ -326,16 +326,39 @@
   .inventory-help { margin: 5px 0 14px; color: var(--muted); font-size: 12px; }
   .inventory-controls { display: flex; align-items: center; gap: 10px; }
   .quantity {
-    min-width: 48px;
+    width: 64px;
+    min-width: 64px;
+    padding: 5px 4px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    outline: 0;
+    background: var(--surface-inset);
     color: var(--accent);
     text-align: center;
-    font: 700 24px var(--mono);
+    font: 700 16px var(--mono);
+    touch-action: manipulation;
   }
+  .quantity:focus { border-color: var(--accent); }
   .inventory-controls .icon-btn { font-size: 22px; }
   .reset-inventory { margin-top: 14px; width: 100%; }
 
   .saved-list { display: flex; flex-direction: column; gap: 10px; }
-  .saved-record { padding: 14px; }
+  .saved-swipe-shell { position: relative; overflow: hidden; border-radius: 16px; background: var(--red); }
+  .saved-record { position: relative; z-index: 1; padding: 14px; transition: transform .2s ease; }
+  .saved-record.swiped { transform: translateX(-88px); }
+  .saved-delete-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 88px;
+    border: 0;
+    border-radius: 0;
+    background: var(--red);
+    color: #22070a;
+    cursor: pointer;
+    font-weight: 800;
+  }
   .saved-record h3 { margin: 0; color: var(--text); font: 700 14px var(--display); }
   .saved-meta { margin-top: 4px; color: var(--muted); font: 11px var(--mono); }
   .saved-preview { margin: 10px 0 12px; color: var(--muted); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -474,7 +497,7 @@
   <div class="stats-row" aria-label="Current report summary">
     <div class="stat-chip green"><span class="num" id="statIn">0</span> Checked In</div>
     <div class="stat-chip amber"><span class="num" id="statRedir">0</span> Redirected</div>
-    <div class="stat-chip purple"><span class="num" id="statInt">0</span> Interested</div>
+    <div class="stat-chip purple"><span class="num" id="statInt">0</span> Interaction</div>
     <div class="stat-chip"><span class="num" id="statSold">0</span> Sold</div>
   </div>
 </header>
@@ -831,8 +854,8 @@ function buildCard(customer, index) {
   firstRow.className = 'control-row';
   firstRow.append(
     buildChoiceGroup(customer, index, 'redirected', 'Redirected?', ['Yes', 'No']),
-    buildChoiceGroup(customer, index, 'interested', 'Interested?', ['Yes', 'No']),
-    buildChoiceGroup(customer, index, 'is18OrOlder', '18 or older?', ['Yes', 'No'])
+    buildChoiceGroup(customer, index, 'is18OrOlder', '18 or older?', ['Yes', 'No']),
+    buildChoiceGroup(customer, index, 'interested', 'Interaction?', ['Yes', 'No'])
   );
 
   const productGroup = buildChoiceGroup(customer, index, 'soldProduct', 'Product sold?', ['IQOS', 'VEEV', 'None']);
@@ -955,7 +978,7 @@ function copyReport() {
       const redir = customer.redirected || '-';
       const displayName = customer.name.replace(/^Customer\s+(\d+)$/i, 'CX$1');
       let line = `${displayName} |${formatReportTime(customer.checkInTime) || '-'}| Redirected: ${redir}`;
-      if (customer.interested) line += ` | Interested: ${customer.interested}`;
+      if (customer.interested) line += ` | Interaction: ${customer.interested}`;
       if (customer.is18OrOlder === 'Yes') line += ' | 18+';
       if (customer.is18OrOlder === 'No') line += ' | 18-';
       if (customer.soldProduct === 'IQOS' || customer.soldProduct === 'VEEV') {
@@ -1013,6 +1036,8 @@ function renderSaved() {
     return;
   }
   list.replaceChildren(...savedRecords.map(record => {
+    const shell = document.createElement('div');
+    shell.className = 'saved-swipe-shell';
     const article = document.createElement('article');
     article.className = 'saved-record';
     const top = document.createElement('div');
@@ -1030,13 +1055,46 @@ function renderSaved() {
     open.textContent = 'Open';
     open.addEventListener('click', () => showSavedRecord(record));
     top.append(heading, open);
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'saved-delete-btn';
+    deleteButton.textContent = 'Delete';
+    deleteButton.setAttribute('aria-label', `Delete saved report from ${formatDateTime(record.savedAt)}`);
+    deleteButton.addEventListener('click', () => deleteSavedRecord(record.id));
     const preview = document.createElement('p');
     preview.className = 'saved-preview';
     const note = record.customers.find(customer => customer.notes.trim())?.notes.trim();
     preview.textContent = note || record.extraNotes.trim() || 'No notes in this saved snapshot.';
     article.append(top, preview);
-    return article;
+    shell.append(deleteButton, article);
+    let startX = 0;
+    let offsetX = 0;
+    article.addEventListener('touchstart', event => {
+      startX = event.touches[0].clientX;
+      offsetX = article.classList.contains('swiped') ? -88 : 0;
+      article.style.transition = 'none';
+    }, { passive: true });
+    article.addEventListener('touchmove', event => {
+      const delta = event.touches[0].clientX - startX;
+      const next = Math.max(-88, Math.min(0, offsetX + delta));
+      article.style.transform = `translateX(${next}px)`;
+    }, { passive: true });
+    article.addEventListener('touchend', () => {
+      article.style.transition = '';
+      const match = article.style.transform.match(/-?\d+/);
+      const revealed = Number(match?.[0] || 0) < -44;
+      article.style.transform = '';
+      article.classList.toggle('swiped', revealed);
+    });
+    return shell;
   }));
+}
+
+function deleteSavedRecord(recordId) {
+  savedRecords = savedRecords.filter(record => record.id !== recordId);
+  saveRecords();
+  renderSaved();
+  setStatus('Saved report deleted');
 }
 
 function showSavedRecord(record) {
@@ -1060,7 +1118,7 @@ function showSavedRecord(record) {
     title.textContent = `${customer.name} - ${customer.checkedIn ? `Checked in ${formatCheckInTime(customer.checkInTime)}` : 'Not checked in'}`;
     const details = document.createElement('p');
     details.className = 'detail-line';
-    details.textContent = `Redirected: ${customer.redirected || '-'} - Interested: ${customer.interested || '-'} - 18+: ${customer.is18OrOlder || '-'} - Product sold: ${customer.soldProduct === 'NONE' ? 'None' : (customer.soldProduct || '-')}`;
+    details.textContent = `Redirected: ${customer.redirected || '-'} - Interaction: ${customer.interested || '-'} - 18 or older: ${customer.is18OrOlder || '-'} - Product sold: ${customer.soldProduct === 'NONE' ? 'None' : (customer.soldProduct || '-')}`;
     const notes = document.createElement('p');
     notes.className = 'detail-line';
     notes.textContent = customer.notes ? `Notes: ${customer.notes}` : 'Notes: -';
@@ -1095,10 +1153,21 @@ function renderInventory() {
     minus.setAttribute('aria-label', `Decrease ${key} inventory`);
     minus.disabled = inventory[key] === 0;
     minus.addEventListener('click', () => changeInventory(key, -1));
-    const quantity = document.createElement('output');
+    const quantity = document.createElement('input');
     quantity.className = 'quantity';
-    quantity.textContent = inventory[key];
+    quantity.type = 'number';
+    quantity.inputMode = 'numeric';
+    quantity.min = '0';
+    quantity.step = '1';
+    quantity.value = inventory[key];
     quantity.setAttribute('aria-label', `${inventory[key]} ${key} test sticks`);
+    const commitQuantity = () => {
+      inventory[key] = safeQuantity(quantity.value);
+      saveInventory();
+      renderInventory();
+    };
+    quantity.addEventListener('change', commitQuantity);
+    quantity.addEventListener('blur', commitQuantity);
     const plus = document.createElement('button');
     plus.type = 'button';
     plus.className = 'icon-btn';
